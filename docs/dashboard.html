@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MoveCheck Pro — Le mur</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink:#1a1612; --ink-soft:#2a2218; --muted:#5a5047; --light:#8a7d70;
+    --cream:#faf8f4; --warm:#f2ede5; --warm-2:#ebe3d4; --divider:#e0d8cc;
+    --gold:#b8860b; --gold-light:#f5e9c0; --green:#3d7a52; --green-light:#e8f3ec;
+    --blue:#2e5e8a; --blue-light:#e6eef6; --red:#8a3d3d; --red-light:#f6e6e6;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--ink); font-size: 14px; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; padding: 0 24px; height: 56px; border-bottom: 1px solid var(--divider); }
+  .brand { font-family: 'Playfair Display', serif; font-size: 19px; font-weight: 700; }
+  .brand em { font-style: italic; color: var(--gold); }
+  .logout { font-size: 12px; color: var(--muted); background: none; border: 1px solid var(--divider); padding: 6px 12px; border-radius: 7px; cursor: pointer; }
+
+  #loginView { max-width: 360px; margin: 80px auto; padding: 0 20px; }
+  #loginView h1 { font-family: 'Playfair Display', serif; font-size: 22px; margin-bottom: 20px; }
+  #loginView input { width: 100%; padding: 11px 14px; border: 1.5px solid var(--divider); border-radius: 8px; margin-bottom: 10px; font-size: 14px; }
+  #loginView button { width: 100%; padding: 12px; background: var(--ink); color: var(--cream); border: none; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
+  #loginError { color: var(--red); font-size: 13px; margin-bottom: 10px; display: none; }
+
+  .layout { display: flex; height: calc(100vh - 56px); }
+  .list-pane { width: 340px; flex-shrink: 0; border-right: 1px solid var(--divider); overflow-y: auto; }
+  .card { padding: 14px 18px; border-bottom: 1px solid var(--divider); cursor: pointer; border-left: 3px solid transparent; }
+  .card:hover { background: var(--warm-2); }
+  .card.active { background: var(--warm); border-left-color: var(--gold); }
+  .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+  .card-name { font-weight: 600; font-size: 13.5px; }
+  .badge { font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: 10px; text-transform: uppercase; }
+  .badge.paye { background: var(--blue-light); color: var(--blue); }
+  .badge.filme { background: var(--gold-light); color: var(--ink-soft); border: 1px solid #d4a82a; }
+  .badge.termine { background: var(--green-light); color: var(--green); }
+  .card-meta { font-size: 11px; color: var(--light); }
+
+  .detail-pane { flex: 1; overflow-y: auto; padding: 28px 32px; }
+  .empty { color: var(--light); text-align: center; margin-top: 80px; }
+  .patient-name { font-family: 'Playfair Display', serif; font-size: 24px; margin-bottom: 6px; }
+  .patient-code { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); margin-bottom: 20px; }
+  .section-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gold); font-weight: 600; margin: 22px 0 10px; }
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; font-size: 13.5px; }
+  .info-grid div span { display: block; color: var(--light); font-size: 11px; text-transform: uppercase; margin-bottom: 2px; }
+  .obs-item { background: #fff; border: 1px solid var(--divider); border-radius: 8px; padding: 12px 14px; margin-bottom: 8px; font-size: 13px; }
+  .obs-item strong { display: block; font-size: 12px; color: var(--gold); margin-bottom: 4px; }
+  .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px,1fr)); gap: 12px; }
+  .video-card { background: #fff; border: 1px solid var(--divider); border-radius: 10px; padding: 14px; }
+  .video-card-name { font-weight: 600; font-size: 12.5px; margin-bottom: 6px; }
+  .video-card a { font-size: 12px; color: var(--blue); }
+  .actions { margin-top: 24px; }
+  .actions button { background: var(--green); color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; }
+  .toast { position: fixed; bottom: 20px; right: 20px; background: var(--gold-light); border: 1px solid #d4a82a; border-radius: 10px; padding: 12px 18px; font-size: 13px; box-shadow: 0 4px 20px rgba(26,22,18,0.15); transform: translateY(80px); opacity: 0; transition: all 0.3s; }
+  .toast.show { transform: translateY(0); opacity: 1; }
+</style>
+</head>
+<body>
+
+  <div id="loginView">
+    <h1>Connexion — MoveCheck Pro</h1>
+    <div id="loginError">Identifiants incorrects.</div>
+    <input type="email" id="loginEmail" placeholder="Email">
+    <input type="password" id="loginPassword" placeholder="Mot de passe">
+    <button id="loginBtn">Se connecter</button>
+  </div>
+
+  <div id="appView" style="display:none;">
+    <header class="topbar">
+      <div class="brand">Move<em>Check</em> Pro — Le mur</div>
+      <button class="logout" id="logoutBtn">Déconnexion</button>
+    </header>
+    <div class="layout">
+      <div class="list-pane" id="listPane"></div>
+      <div class="detail-pane" id="detailPane"><div class="empty">Sélectionnez un dossier</div></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="config.js"></script>
+  <script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+    const cfg = window.MOVECHECK_CONFIG;
+    const supabase = createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
+
+    let bilans = [];
+    let selectedId = null;
+
+    function statusLabel(s) {
+      return { paye: 'Payé', filme: 'Filmé', termine: 'Terminé' }[s] || s;
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 4000);
+    }
+
+    function renderList() {
+      const pane = document.getElementById('listPane');
+      if (!bilans.length) {
+        pane.innerHTML = '<div class="empty" style="margin-top:40px;">Aucune demande pour le moment</div>';
+        return;
+      }
+      pane.innerHTML = bilans.map(b => `
+        <div class="card ${b.id === selectedId ? 'active' : ''}" data-id="${b.id}">
+          <div class="card-top">
+            <span class="card-name">${b.prenom} ${b.nom}</span>
+            <span class="badge ${b.status}">${statusLabel(b.status)}</span>
+          </div>
+          <div class="card-meta">${b.zone || '—'} · ${new Date(b.created_at).toLocaleDateString('fr-FR')}</div>
+        </div>
+      `).join('');
+      pane.querySelectorAll('.card').forEach(el => {
+        el.addEventListener('click', () => selectBilan(el.dataset.id));
+      });
+    }
+
+    async function selectBilan(id) {
+      selectedId = id;
+      renderList();
+      const b = bilans.find(x => x.id === id);
+      const pane = document.getElementById('detailPane');
+      if (!b) return;
+
+      const videoLinks = await Promise.all((b.videos || []).map(async v => {
+        const { data } = await supabase.storage.from('videos').createSignedUrl(v.path, 3600);
+        return { ...v, url: data?.signedUrl };
+      }));
+
+      const obsEntries = Object.entries(b.observations || {}).filter(([, v]) => v);
+
+      pane.innerHTML = `
+        <div class="patient-name">${b.prenom} ${b.nom}</div>
+        <div class="patient-code">Code ${b.code} · <span class="badge ${b.status}">${statusLabel(b.status)}</span></div>
+
+        <div class="section-title">Informations</div>
+        <div class="info-grid">
+          <div><span>Email</span>${b.email}</div>
+          <div><span>Téléphone</span>${b.telephone || '—'}</div>
+          <div><span>Zone</span>${b.zone || '—'}</div>
+          <div><span>Demande créée le</span>${new Date(b.created_at).toLocaleString('fr-FR')}</div>
+        </div>
+
+        <div class="section-title">Observations</div>
+        ${obsEntries.length
+          ? obsEntries.map(([k, v]) => `<div class="obs-item"><strong>${k}</strong>${v}</div>`).join('')
+          : '<div class="empty" style="margin:0;text-align:left;color:var(--light);">Pas encore de filmage reçu.</div>'}
+
+        <div class="section-title">Vidéos</div>
+        ${videoLinks.length
+          ? `<div class="video-grid">${videoLinks.map(v => `
+              <div class="video-card">
+                <div class="video-card-name">${v.testName}</div>
+                ${v.url ? `<a href="${v.url}" target="_blank">Télécharger →</a>` : 'Lien indisponible'}
+              </div>
+            `).join('')}</div>`
+          : '<div class="empty" style="margin:0;text-align:left;color:var(--light);">Aucune vidéo reçue.</div>'}
+
+        ${b.status === 'filme' ? `<div class="actions"><button id="markDoneBtn">Marquer comme terminé</button></div>` : ''}
+      `;
+
+      const markBtn = document.getElementById('markDoneBtn');
+      if (markBtn) {
+        markBtn.addEventListener('click', async () => {
+          await supabase.from('bilans').update({ status: 'termine' }).eq('id', b.id);
+        });
+      }
+    }
+
+    async function loadBilans() {
+      const { data, error } = await supabase.from('bilans').select('*').order('created_at', { ascending: false });
+      if (error) { console.error(error); return; }
+      bilans = data;
+      renderList();
+      if (selectedId) selectBilan(selectedId);
+    }
+
+    function subscribeRealtime() {
+      supabase.channel('bilans-changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'bilans' }, (payload) => {
+          if (payload.eventType === 'INSERT') showToast(`Nouvelle demande : ${payload.new.prenom} ${payload.new.nom}`);
+          if (payload.eventType === 'UPDATE' && payload.new.status === 'filme' && payload.old.status !== 'filme') {
+            showToast(`Vidéos reçues : ${payload.new.prenom} ${payload.new.nom}`);
+          }
+          loadBilans();
+        })
+        .subscribe();
+    }
+
+    async function showApp() {
+      document.getElementById('loginView').style.display = 'none';
+      document.getElementById('appView').style.display = 'block';
+      await loadBilans();
+      subscribeRealtime();
+    }
+
+    document.getElementById('loginBtn').addEventListener('click', async () => {
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        document.getElementById('loginError').style.display = 'block';
+        return;
+      }
+      showApp();
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      await supabase.auth.signOut();
+      window.location.reload();
+    });
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) showApp();
+    });
+  </script>
+</body>
+</html>

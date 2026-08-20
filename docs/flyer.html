@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MoveCheck – Flyer salle d'attente</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Montserrat', sans-serif; background: #f0f0f0; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+    .flyer { width: 148mm; min-height: 210mm; background: #ffffff; padding: 12mm 10mm; display: flex; flex-direction: column; align-items: center; gap: 6mm; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+    .header { width: 100%; text-align: right; font-size: 8pt; color: #888; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 3mm; }
+    .badge { background: #1B6CA8; color: white; font-size: 7.5pt; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; padding: 3px 12px; border-radius: 20px; }
+    .title { text-align: center; line-height: 1.15; }
+    .title h1 { font-size: 26pt; font-weight: 800; color: #1B2A3B; line-height: 1.1; }
+    .title h1 span { color: #1B6CA8; }
+    .subtitle { font-size: 10pt; color: #555; text-align: center; font-weight: 400; line-height: 1.5; max-width: 120mm; }
+    .steps { width: 100%; display: flex; flex-direction: column; gap: 3mm; }
+    .step { display: flex; align-items: flex-start; gap: 3mm; }
+    .step-num { min-width: 7mm; height: 7mm; background: #1B6CA8; color: white; border-radius: 50%; font-size: 7.5pt; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-top: 1px; }
+    .step-text { font-size: 9pt; color: #333; line-height: 1.4; }
+    .step-text strong { font-weight: 700; color: #1B2A3B; }
+    .divider { width: 100%; border: none; border-top: 1px solid #eee; }
+    .price-block { text-align: center; background: #f4f8fd; border-radius: 8px; padding: 4mm 8mm; width: 100%; }
+    .price-block .price { font-size: 28pt; font-weight: 800; color: #1B6CA8; }
+    .price-block .price-detail { font-size: 8pt; color: #666; margin-top: 1mm; line-height: 1.5; }
+    .qr-section { display: flex; flex-direction: column; align-items: center; gap: 3mm; width: 100%; }
+    .qr-placeholder { width: 35mm; height: 35mm; border: 2px dashed #1B6CA8; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: #f9fbff; overflow: hidden; }
+    #qrcode canvas, #qrcode img { width: 33mm !important; height: 33mm !important; }
+    .qr-label { font-size: 9pt; color: #444; font-weight: 600; text-align: center; }
+    .footer { width: 100%; text-align: center; font-size: 7.5pt; color: #999; border-top: 1px solid #eee; padding-top: 3mm; line-height: 1.6; }
+    @media print {
+      body { background: white; padding: 0; margin: 0; }
+      .flyer { box-shadow: none; width: 148mm; min-height: 210mm; }
+      @page { size: A5 portrait; margin: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="flyer">
+    <div class="header">Nicolas Roger · Ostéopathe D.O.</div>
+    <div class="badge">Nouveau service</div>
+    <div class="title"><h1>Bougez mieux,<br><span>de chez vous.</span></h1></div>
+    <p class="subtitle">Un bilan de mobilité à distance pour identifier ce qui limite vos mouvements et recevoir un programme fait pour vous.</p>
+    <hr class="divider">
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-text"><strong>Vous réglez</strong> le bilan en ligne, paiement sécurisé.</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-text"><strong>Vous filmez</strong> 5 tests de mobilité simples à domicile, guidé par l'appli.</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-text"><strong>Vous recevez</strong> un programme de mobilité personnalisé, suivi inclus à J+30.</div></div>
+    </div>
+    <hr class="divider">
+    <div class="price-block">
+      <div class="price">59 €</div>
+      <div class="price-detail">Bilan complet · Programme personnalisé · Suivi J+30</div>
+    </div>
+    <div class="qr-section">
+      <div class="qr-placeholder"><div id="qrcode"></div></div>
+      <div class="qr-label">Scannez pour découvrir MoveCheck</div>
+    </div>
+    <div class="footer">Nicolas Roger · Ostéopathe D.O. · Narbonne<br>Ce bilan ne remplace pas une consultation ostéopathique.</div>
+  </div>
+  <script>
+    // Le QR pointe vers la page de présentation MoveCheck (index.html),
+    // et non plus vers un Google Form.
+    const SITE_URL = window.location.origin + window.location.pathname.replace(/flyer\.html$/, 'index.html');
+    new QRCode(document.getElementById("qrcode"), {
+      text: SITE_URL,
+      width: 132,
+      height: 132,
+      colorDark: "#1B2A3B",
+      colorLight: "#ffffff",
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  </script>
+</body>
+</html>
