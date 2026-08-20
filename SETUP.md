@@ -45,35 +45,39 @@ pouvez faire (création de comptes, clés secrètes). Comptez ~45 minutes.
 
 ## 2. Déployer les fonctions (Edge Functions)
 
-Sur votre ordinateur (pas dans cette session) :
+Le déploiement se fait automatiquement via **GitHub Actions**
+(`.github/workflows/deploy-supabase-functions.yml`), à chaque modification
+dans `supabase/functions/`, ou manuellement via l'onglet **Actions** du
+repo → *Déployer les fonctions Supabase* → **Run workflow**.
 
-```bash
-npm install -g supabase
-supabase login
-cd movecheck   # ce dépôt cloné en local
-supabase link --project-ref VOTRE_PROJECT_REF   # visible dans l'URL du dashboard Supabase
+Il vous suffit d'ajouter les secrets suivants dans **Settings → Secrets and
+variables → Actions → New repository secret** :
 
-# Secrets utilisés par les fonctions (ne PAS mettre SUPABASE_URL /
-# SUPABASE_SERVICE_ROLE_KEY : Supabase les injecte automatiquement)
-supabase secrets set STRIPE_SECRET_KEY=sk_live_xxx
-supabase secrets set STRIPE_WEBHOOK_SECRET=whsec_xxx   # obtenu à l'étape 4
-supabase secrets set RESEND_API_KEY=re_xxx              # étape 3
-supabase secrets set FROM_EMAIL="MoveCheck <onboarding@resend.dev>"
-supabase secrets set SITE_URL=https://VOTRE-COMPTE.github.io/MOVECHECK
-supabase secrets set PRACTITIONER_EMAIL=nicolasroger16@gmail.com
+| Secret | Valeur |
+|---|---|
+| `SUPABASE_ACCESS_TOKEN` | Jeton généré sur [supabase.com/dashboard/account/tokens](https://supabase.com/dashboard/account/tokens) |
+| `SUPABASE_PROJECT_REF` | La partie avant `.supabase.co` dans votre Project URL |
+| `STRIPE_SECRET_KEY` | Clé secrète Stripe (Développeurs → Clés API) |
+| `STRIPE_WEBHOOK_SECRET` | Obtenu à l'étape 4 ci-dessous |
+| `RESEND_API_KEY` | Obtenu à l'étape 3 ci-dessous |
 
-supabase functions deploy stripe-webhook --no-verify-jwt
-supabase functions deploy get-code --no-verify-jwt
-supabase functions deploy get-bilan --no-verify-jwt
-supabase functions deploy get-upload-url --no-verify-jwt
-supabase functions deploy submit-filmage --no-verify-jwt
-```
+`FROM_EMAIL`, `SITE_URL` et `PRACTITIONER_EMAIL` sont optionnels : des
+valeurs par défaut correctes sont déjà utilisées si vous ne les ajoutez pas.
 
-Le `--no-verify-jwt` est nécessaire car ces fonctions sont appelées soit par
-Stripe (pas de session Supabase), soit par des patients qui ne sont pas
-connectés. La sécurité vient de la signature Stripe (pour le webhook) et du
-code MC-XXXXXX (pour les autres) — personne ne peut deviner le code d'un
-autre patient.
+Vous pouvez ajouter `SUPABASE_ACCESS_TOKEN` et `SUPABASE_PROJECT_REF` dès
+maintenant pour déployer les 4 fonctions qui n'ont pas besoin de Stripe/Resend
+(`get-code`, `get-bilan`, `get-upload-url`, `submit-filmage`), puis ajouter
+les 3 autres secrets une fois les étapes 3 et 4 faites, et relancer le
+workflow (Actions → *Run workflow*) — pas besoin de tout faire d'un coup.
+
+Le `--no-verify-jwt` utilisé dans le workflow est nécessaire car ces
+fonctions sont appelées soit par Stripe (pas de session Supabase), soit par
+des patients qui ne sont pas connectés. La sécurité vient de la signature
+Stripe (pour le webhook) et du code MC-XXXXXX (pour les autres) — personne
+ne peut deviner le code d'un autre patient.
+
+*(Alternative : vous pouvez aussi déployer depuis votre ordinateur avec
+`npm install -g supabase && supabase login && supabase link --project-ref ... && supabase functions deploy <nom> --no-verify-jwt` pour chacune des 5 fonctions, si vous préférez ne pas utiliser GitHub Actions.)*
 
 ## 3. Créer un compte Resend (envoi des emails)
 
