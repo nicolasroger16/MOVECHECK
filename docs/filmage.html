@@ -22,6 +22,13 @@
   .btn:disabled { opacity: 0.5; cursor: not-allowed; }
   .error-msg { color: var(--red); font-size: 13px; margin-bottom: 12px; }
 
+  .prep-section { background: #fff; border: 1px solid var(--divider); border-radius: 12px; margin-bottom: 24px; overflow: hidden; }
+  .prep-title { padding: 12px 18px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; color: var(--gold); background: var(--gold-light); }
+  .prep-item { display: flex; gap: 14px; align-items: flex-start; padding: 14px 18px; border-top: 1px solid var(--divider); }
+  .prep-icon { font-size: 20px; flex-shrink: 0; }
+  .prep-item strong { display: block; font-size: 14px; margin-bottom: 3px; }
+  .prep-item span { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
   .test-card { background: #fff; border: 1px solid var(--divider); border-radius: 12px; margin-bottom: 16px; overflow: hidden; }
   .test-head { display: flex; align-items: center; gap: 12px; padding: 14px 18px; background: var(--warm); }
   .test-num { width: 28px; height: 28px; border-radius: 50%; background: var(--gold); color: #fff; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
@@ -60,6 +67,27 @@
     <div id="mainView" style="display:none;">
       <h1>Bonjour <span id="prenomSpan"></span> 👋</h1>
       <p class="lead">Filmez chaque test directement depuis votre téléphone, puis notez vos observations. 5 tests · environ 20 minutes.</p>
+
+      <div class="prep-section">
+        <div class="prep-title">Avant de commencer</div>
+        <div class="prep-item">
+          <div class="prep-icon">📍</div>
+          <div><strong>L'espace</strong><span>Une pièce dégagée, assez grande pour faire un grand pas en avant. Sol plat, pas de tapis épais.</span></div>
+        </div>
+        <div class="prep-item">
+          <div class="prep-icon">👕</div>
+          <div><strong>La tenue</strong><span>Tenue ajustée ou short/t-shirt. Les articulations doivent être visibles. Pieds nus de préférence.</span></div>
+        </div>
+        <div class="prep-item">
+          <div class="prep-icon">📱</div>
+          <div><strong>Le cadrage</strong><span>Posez votre téléphone contre un mur ou un support stable, en mode portrait (vertical). L'angle demandé (face ou profil) est précisé pour chaque test.</span></div>
+        </div>
+        <div class="prep-item">
+          <div class="prep-icon">💡</div>
+          <div><strong>La lumière</strong><span>Filmez dans une pièce bien éclairée, si possible avec la lumière devant vous plutôt que derrière.</span></div>
+        </div>
+      </div>
+
       <div id="testsContainer"></div>
       <div class="submit-bar">
         <button class="btn" id="submitBtn" disabled>Filmez les 5 tests pour envoyer</button>
