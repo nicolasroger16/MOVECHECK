@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paiement confirmé — MoveCheck</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=Playfair+Display:ital,wght@0,700&display=swap" rel="stylesheet">
+<style>
+  :root { --ink:#1a1612; --muted:#5a5047; --cream:#faf8f4; --warm:#f2ede5; --divider:#e0d8cc; --gold:#b8860b; --gold-light:#f5e9c0; --green:#3d7a52; --red:#8a3d3d; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--ink); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .card { max-width: 440px; width: 100%; text-align: center; }
+  h1 { font-family: 'Playfair Display', serif; font-size: 28px; margin-bottom: 14px; }
+  p { color: var(--muted); font-size: 15px; margin-bottom: 18px; line-height: 1.6; }
+  .spinner { width: 32px; height: 32px; border: 3px solid var(--divider); border-top-color: var(--gold); border-radius: 50%; margin: 0 auto 24px; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .code-box { background: var(--gold-light); border: 1px solid #d4a82a; border-radius: 10px; padding: 18px; font-family: monospace; font-size: 22px; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 20px; }
+  .btn { display: inline-block; background: var(--ink); color: var(--cream); font-size: 15px; font-weight: 500; padding: 14px 24px; border-radius: 10px; text-decoration: none; }
+  .error { color: var(--red); }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div id="loading">
+      <div class="spinner"></div>
+      <h1>Paiement en cours de traitement…</h1>
+      <p>Merci ! Nous finalisons votre dossier, cela prend quelques secondes.</p>
+    </div>
+
+    <div id="ready" style="display:none;">
+      <h1>Merci <span id="prenom"></span>, c'est confirmé !</h1>
+      <p>Voici votre code d'accès aux consignes de filmage (vous l'avez aussi reçu par email) :</p>
+      <div class="code-box" id="codeBox"></div>
+      <a class="btn" id="filmageBtn" href="#">Accéder aux consignes de filmage</a>
+    </div>
+
+    <div id="failed" style="display:none;">
+      <h1 class="error">Un souci est survenu</h1>
+      <p>Votre paiement a bien été reçu mais nous n'avons pas pu générer votre code automatiquement. Pas d'inquiétude : vous allez recevoir votre code par email dans les prochaines minutes. Vous pouvez aussi nous contacter directement.</p>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script>
+    const cfg = window.MOVECHECK_CONFIG;
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get('session_id');
+
+    async function poll(attempts) {
+      if (!sessionId) { showFailed(); return; }
+      if (attempts <= 0) { showFailed(); return; }
+
+      try {
+        const res = await fetch(`${cfg.SUPABASE_URL}/functions/v1/get-code`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${cfg.SUPABASE_ANON_KEY}` },
+          body: JSON.stringify({ session_id: sessionId }),
+        });
+        const data = await res.json();
+        if (data.ready) {
+          showReady(data);
+          return;
+        }
+      } catch (e) { /* on réessaie */ }
+
+      setTimeout(() => poll(attempts - 1), 2000);
+    }
+
+    function showReady(data) {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('ready').style.display = 'block';
+      document.getElementById('prenom').textContent = data.prenom || '';
+      document.getElementById('codeBox').textContent = data.code;
+      document.getElementById('filmageBtn').href = data.filmageUrl;
+    }
+
+    function showFailed() {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('failed').style.display = 'block';
+    }
+
+    poll(20); // ~40s max
+  </script>
+</body>
+</html>

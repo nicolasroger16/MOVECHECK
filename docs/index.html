@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="MoveCheck — Évaluation de mobilité à distance par Nicolas Roger, ostéopathe.">
+<meta name="theme-color" content="#faf8f4">
+<title>MoveCheck — Bilan de mobilité à distance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,700;1,400;1,700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1612; --muted: #5a5047; --light: #8a7d70;
+    --cream: #faf8f4; --warm: #f2ede5; --warm-2: #ebe3d4; --divider: #e0d8cc;
+    --gold: #b8860b; --gold-light: #f5e9c0;
+    --green: #3d7a52; --green-light: #e8f3ec;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; color: var(--ink); background: var(--cream); line-height: 1.6; }
+  .wrap { max-width: 680px; margin: 0 auto; padding: 48px 20px 80px; }
+  .badge { display: inline-block; background: var(--gold-light); border: 1px solid #d4a82a; color: var(--ink); font-size: 12px; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; padding: 5px 14px; border-radius: 20px; margin-bottom: 20px; }
+  h1 { font-family: 'Playfair Display', serif; font-size: clamp(30px, 6vw, 44px); font-weight: 700; line-height: 1.15; margin-bottom: 16px; }
+  h1 em { font-style: italic; color: var(--gold); }
+  .lead { font-size: 17px; color: var(--muted); font-weight: 300; max-width: 520px; margin-bottom: 36px; }
+  .steps { display: flex; flex-direction: column; gap: 18px; margin-bottom: 40px; }
+  .step { display: flex; gap: 16px; align-items: flex-start; background: #fff; border: 1px solid var(--divider); border-radius: 12px; padding: 18px 20px; }
+  .step-num { flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%; background: var(--gold); color: #fff; font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center; }
+  .step-body strong { display: block; font-size: 15px; margin-bottom: 3px; }
+  .step-body span { font-size: 14px; color: var(--muted); }
+  .price-card { background: var(--warm); border: 1px solid var(--divider); border-radius: 14px; padding: 28px; text-align: center; margin-bottom: 32px; }
+  .price { font-family: 'Playfair Display', serif; font-size: 40px; font-weight: 700; color: var(--gold); }
+  .price-detail { font-size: 13px; color: var(--muted); margin-top: 6px; margin-bottom: 22px; }
+  .btn-cta { display: inline-block; width: 100%; background: var(--ink); color: var(--cream); font-size: 16px; font-weight: 500; padding: 16px 24px; border-radius: 10px; text-decoration: none; transition: background 0.2s; }
+  .btn-cta:hover { background: #2a2218; }
+  .note { font-size: 13px; color: var(--light); margin-top: 16px; }
+  .info-box { display: flex; gap: 12px; background: var(--green-light); border-left: 3px solid var(--green); border-radius: 8px; padding: 14px 16px; font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+  footer { text-align: center; font-size: 12px; color: var(--light); margin-top: 40px; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="badge">Nouveau service</div>
+    <h1>Bougez mieux,<br><em>de chez vous.</em></h1>
+    <p class="lead">Un bilan de mobilité à distance pour identifier ce qui limite vos mouvements, et recevoir un programme personnalisé fait pour vous.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body"><strong>Vous réglez le bilan</strong><span>Paiement sécurisé en ligne, 2 minutes.</span></div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body"><strong>Vous filmez 5 tests simples</strong><span>Guidé pas à pas depuis votre téléphone, directement dans l'appli.</span></div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body"><strong>Vous recevez votre programme</strong><span>Analyse personnalisée et suivi à J+30.</span></div>
+      </div>
+    </div>
+
+    <div class="price-card">
+      <div class="price">59 €</div>
+      <div class="price-detail">Bilan complet · Programme personnalisé · Suivi J+30</div>
+      <a class="btn-cta" id="ctaBtn" href="#">Commencer mon bilan</a>
+      <div class="note">Vous recevrez votre code d'accès aux consignes de filmage juste après le paiement.</div>
+    </div>
+
+    <div class="info-box">
+      🔒&nbsp; Ce bilan ne remplace pas une consultation ostéopathique. En cas de douleur vive, consultez un professionnel de santé en priorité.
+    </div>
+
+    <footer>Nicolas Roger · Ostéopathe D.O. · Narbonne</footer>
+  </div>
+
+  <script src="config.js"></script>
+  <script>
+    document.getElementById('ctaBtn').href = window.MOVECHECK_CONFIG.STRIPE_PAYMENT_LINK;
+  </script>
+</body>
+</html>

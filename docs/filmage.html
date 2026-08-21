@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MoveCheck — Consignes de filmage</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink:#1a1612; --ink-soft:#2a2218; --muted:#5a5047; --light:#8a7d70;
+    --cream:#faf8f4; --warm:#f2ede5; --warm-2:#ebe3d4; --divider:#e0d8cc;
+    --gold:#b8860b; --gold-light:#f5e9c0; --green:#3d7a52; --green-light:#e8f3ec; --red:#8a3d3d; --red-light:#f6e6e6;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--ink); padding-bottom: 60px; }
+  .wrap { max-width: 640px; margin: 0 auto; padding: 32px 20px; }
+  h1 { font-family: 'Playfair Display', serif; font-size: 26px; margin-bottom: 8px; }
+  .lead { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
+  .gate { background: #fff; border: 1px solid var(--divider); border-radius: 12px; padding: 24px; }
+  .gate input { width: 100%; padding: 12px 14px; font-size: 16px; border: 1.5px solid var(--divider); border-radius: 8px; margin-bottom: 12px; font-family: 'DM Mono', monospace; text-transform: uppercase; }
+  .btn { display: inline-block; background: var(--ink); color: var(--cream); font-size: 14px; font-weight: 500; padding: 12px 22px; border-radius: 8px; border: none; cursor: pointer; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .error-msg { color: var(--red); font-size: 13px; margin-bottom: 12px; }
+
+  .test-card { background: #fff; border: 1px solid var(--divider); border-radius: 12px; margin-bottom: 16px; overflow: hidden; }
+  .test-head { display: flex; align-items: center; gap: 12px; padding: 14px 18px; background: var(--warm); }
+  .test-num { width: 28px; height: 28px; border-radius: 50%; background: var(--gold); color: #fff; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .test-name { font-weight: 600; font-size: 15px; }
+  .test-body { padding: 16px 18px; }
+  .test-instructions { font-size: 13.5px; color: var(--muted); margin-bottom: 10px; line-height: 1.55; }
+  .test-demo { display: inline-block; font-size: 12.5px; color: var(--gold); text-decoration: none; margin-bottom: 14px; }
+  .upload-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .upload-row input[type=file] { flex: 1; font-size: 13px; }
+  .upload-status { font-size: 12px; font-weight: 500; white-space: nowrap; }
+  .upload-status.ok { color: var(--green); }
+  .upload-status.busy { color: var(--gold); }
+  .upload-status.err { color: var(--red); }
+  textarea { width: 100%; min-height: 70px; padding: 10px 12px; border: 1.5px solid var(--divider); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 13.5px; resize: vertical; }
+
+  .submit-bar { position: sticky; bottom: 0; background: var(--cream); border-top: 1px solid var(--divider); padding: 14px 20px; margin: 24px -20px 0; text-align: center; }
+  .submit-bar .btn { width: 100%; max-width: 400px; padding: 14px; font-size: 15px; }
+  .submit-note { font-size: 12px; color: var(--muted); margin-top: 8px; }
+
+  .success { text-align: center; padding: 60px 20px; }
+  .success h1 { margin-bottom: 16px; }
+  .success p { color: var(--muted); max-width: 420px; margin: 0 auto; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+
+    <div id="gateView" class="gate" style="display:none;">
+      <h1>Entrez votre code d'accès</h1>
+      <p class="lead">Le code vous a été envoyé par email après votre paiement (format MC-XXXXXX).</p>
+      <div class="error-msg" id="gateError" style="display:none;"></div>
+      <input type="text" id="codeInput" placeholder="MC-XXXXXX">
+      <button class="btn" id="gateBtn">Valider</button>
+    </div>
+
+    <div id="mainView" style="display:none;">
+      <h1>Bonjour <span id="prenomSpan"></span> 👋</h1>
+      <p class="lead">Filmez chaque test directement depuis votre téléphone, puis notez vos observations. 5 tests · environ 20 minutes.</p>
+      <div id="testsContainer"></div>
+      <div class="submit-bar">
+        <button class="btn" id="submitBtn" disabled>Filmez les 5 tests pour envoyer</button>
+        <div class="submit-note">Vos vidéos sont envoyées au fur et à mesure ; le bouton s'active une fois les 5 reçues.</div>
+      </div>
+    </div>
+
+    <div id="alreadyDoneView" class="success" style="display:none;">
+      <h1>Bilan déjà transmis</h1>
+      <p>Vous avez déjà envoyé vos vidéos et observations pour ce code. Nicolas Roger analyse votre dossier et reviendra vers vous avec votre programme personnalisé.</p>
+    </div>
+
+    <div id="successView" class="success" style="display:none;">
+      <h1>Bilan envoyé ! 🎉</h1>
+      <p>Merci, vos vidéos et observations ont bien été transmises. Vous recevrez votre programme personnalisé sous 48h.</p>
+    </div>
+
+  </div>
+
+  <script src="config.js"></script>
+  <script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+    const cfg = window.MOVECHECK_CONFIG;
+    const supabase = createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
+    const FN_URL = `${cfg.SUPABASE_URL}/functions/v1`;
+    const authHeaders = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${cfg.SUPABASE_ANON_KEY}` };
+
+    const TESTS = [
+      { id: 'squat', name: "L'Overhead Squat", instructions: "Levez les bras en \"Y\" au-dessus de la tête. Descendez en squat le plus bas possible, lentement. Remontez. Répétez 3 fois.", demo: "https://youtu.be/2VO765PBHck" },
+      { id: 'enroulement', name: "L'Enroulement Vertébral", instructions: "Debout, jambes tendues. Relâchez la tête en premier, puis laissez le dos s'enrouler vertèbre par vertèbre vers l'avant. Essayez de toucher vos pieds sans forcer. Tenez 3 secondes, puis déroulez lentement.", demo: "https://youtube.com/shorts/ihzdokaxYW0" },
+      { id: 'apley', name: "Le Test d'Apley", instructions: "Passez une main par-dessus l'épaule (dans le dos), l'autre par le bas. Essayez de rapprocher vos deux mains dans le dos. Filmez les deux côtés.", demo: "https://youtube.com/shorts/DPWV7B3xiIo" },
+      { id: 'rotation', name: "La Rotation Thoracique Assise", instructions: "Assis sur une chaise, bras croisés sur la poitrine. Tournez le buste au maximum vers la droite, puis vers la gauche, sans bouger le bas du corps. Faites 3 rotations de chaque côté lentement.", demo: "https://youtube.com/shorts/95VllZB8ZkY" },
+      { id: 'fente', name: "La Fente Avant", instructions: "Faites un grand pas en avant, descendez le genou arrière vers le sol en gardant le buste vertical. Tenez 2 secondes. Faites le mouvement 3 fois de chaque côté.", demo: "https://youtu.be/nLvfEiEP3NY" },
+    ];
+
+    const uploadedVideos = {}; // id -> {path, fileName, fileSize, testName}
+    let code = null;
+
+    function updateSubmitState() {
+      const done = TESTS.every(t => uploadedVideos[t.id]);
+      document.getElementById('submitBtn').disabled = !done;
+      document.getElementById('submitBtn').textContent = done
+        ? 'Envoyer mon bilan'
+        : `Filmez les 5 tests pour envoyer (${Object.keys(uploadedVideos).length}/5)`;
+    }
+
+    function renderTests() {
+      const container = document.getElementById('testsContainer');
+      container.innerHTML = TESTS.map((t, i) => `
+        <div class="test-card">
+          <div class="test-head">
+            <div class="test-num">${i + 1}</div>
+            <div class="test-name">${t.name}</div>
+          </div>
+          <div class="test-body">
+            <div class="test-instructions">${t.instructions}</div>
+            <a class="test-demo" href="${t.demo}" target="_blank">▶ Voir la démo</a>
+            <div class="upload-row">
+              <input type="file" accept="video/*" capture="environment" id="file-${t.id}">
+              <span class="upload-status" id="status-${t.id}"></span>
+            </div>
+            <textarea id="obs-${t.id}" placeholder="Vos observations : douleur, gêne, difficulté..."></textarea>
+          </div>
+        </div>
+      `).join('');
+
+      TESTS.forEach(t => {
+        document.getElementById(`file-${t.id}`).addEventListener('change', (e) => handleUpload(t, e.target.files[0]));
+      });
+    }
+
+    async function handleUpload(test, file) {
+      if (!file) return;
+      const statusEl = document.getElementById(`status-${test.id}`);
+      statusEl.textContent = 'Envoi en cours…';
+      statusEl.className = 'upload-status busy';
+
+      try {
+        const res = await fetch(`${FN_URL}/get-upload-url`, {
+          method: 'POST', headers: authHeaders,
+          body: JSON.stringify({ code, fileName: file.name }),
+        });
+        const { signedUrl, token, path, error } = await res.json();
+        if (error) throw new Error(error);
+
+        const { error: uploadError } = await supabase.storage.from('videos').uploadToSignedUrl(path, token, file);
+        if (uploadError) throw uploadError;
+
+        uploadedVideos[test.id] = { path, fileName: file.name, fileSize: file.size, testName: test.name };
+        statusEl.textContent = '✓ Reçue';
+        statusEl.className = 'upload-status ok';
+      } catch (err) {
+        console.error(err);
+        statusEl.textContent = 'Échec, réessayez';
+        statusEl.className = 'upload-status err';
+      }
+      updateSubmitState();
+    }
+
+    document.getElementById('submitBtn').addEventListener('click', async () => {
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.textContent = 'Envoi…';
+
+      const observations = {};
+      TESTS.forEach(t => { observations[t.id] = document.getElementById(`obs-${t.id}`).value.trim(); });
+      const videos = TESTS.map(t => uploadedVideos[t.id]);
+
+      try {
+        const res = await fetch(`${FN_URL}/submit-filmage`, {
+          method: 'POST', headers: authHeaders,
+          body: JSON.stringify({ code, observations, videos }),
+        });
+        if (!res.ok) throw new Error('submit failed');
+        document.getElementById('mainView').style.display = 'none';
+        document.getElementById('successView').style.display = 'block';
+      } catch (err) {
+        console.error(err);
+        btn.disabled = false;
+        btn.textContent = 'Envoyer mon bilan';
+        alert("Une erreur est survenue lors de l'envoi, réessayez.");
+      }
+    });
+
+    async function loadCode(c) {
+      const errorEl = document.getElementById('gateError');
+      errorEl.style.display = 'none';
+
+      const res = await fetch(`${FN_URL}/get-bilan`, {
+        method: 'POST', headers: authHeaders, body: JSON.stringify({ code: c }),
+      });
+      const data = await res.json();
+
+      if (!data.valid) {
+        errorEl.textContent = 'Code invalide, vérifiez votre email de confirmation.';
+        errorEl.style.display = 'block';
+        document.getElementById('gateView').style.display = 'block';
+        return;
+      }
+
+      code = c;
+      document.getElementById('gateView').style.display = 'none';
+
+      if (data.status === 'filme' || data.status === 'termine') {
+        document.getElementById('alreadyDoneView').style.display = 'block';
+        return;
+      }
+
+      document.getElementById('prenomSpan').textContent = data.prenom || '';
+      renderTests();
+      updateSubmitState();
+      document.getElementById('mainView').style.display = 'block';
+    }
+
+    document.getElementById('gateBtn').addEventListener('click', () => {
+      const v = document.getElementById('codeInput').value.trim().toUpperCase();
+      if (v) loadCode(v);
+    });
+    document.getElementById('codeInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') document.getElementById('gateBtn').click();
+    });
+
+    const urlCode = new URLSearchParams(window.location.search).get('code');
+    if (urlCode) {
+      loadCode(urlCode.toUpperCase());
+    } else {
+      document.getElementById('gateView').style.display = 'block';
+    }
+  </script>
+</body>
+</html>
