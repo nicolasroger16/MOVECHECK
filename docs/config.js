@@ -5,5 +5,5 @@
 window.MOVECHECK_CONFIG = {
   SUPABASE_URL: "https://hjzlqwidgkdfcbghxnhp.supabase.co",
   SUPABASE_ANON_KEY: "sb_publishable_ljLod-0jzSLOG0XndtUlbg_WDPg_G98",
-  STRIPE_PAYMENT_LINK: "https://buy.stripe.com/VOTRE_LIEN_DE_PAIEMENT",
+  STRIPE_PAYMENT_LINK: "https://buy.stripe.com/bJe28sblH2sIdU4523c3m00",
 };
