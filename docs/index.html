@@ -3,63 +3,73 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="MoveCheck — Évaluation de mobilité à distance par Nicolas Roger, ostéopathe.">
-<meta name="theme-color" content="#faf8f4">
-<title>MoveCheck — Bilan de mobilité à distance</title>
+<meta name="description" content="MoveCheck — Bilan préventif de mobilité à distance par Nicolas Roger, ostéopathe.">
+<meta name="theme-color" content="#f4f2ee">
+<title>MoveCheck — Bilan préventif de mobilité</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,700;1,400;1,700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --ink: #1a1612; --muted: #5a5047; --light: #8a7d70;
-    --cream: #faf8f4; --warm: #f2ede5; --warm-2: #ebe3d4; --divider: #e0d8cc;
-    --gold: #b8860b; --gold-light: #f5e9c0;
-    --green: #3d7a52; --green-light: #e8f3ec;
+    --ink: #111111; --muted: #565656; --paper: #f4f2ee; --rule: #d8d4cc;
+    --burgundy: #7a1f2b;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'DM Sans', sans-serif; color: var(--ink); background: var(--cream); line-height: 1.6; }
-  .wrap { max-width: 680px; margin: 0 auto; padding: 48px 20px 80px; }
-  .badge { display: inline-block; background: var(--gold-light); border: 1px solid #d4a82a; color: var(--ink); font-size: 12px; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; padding: 5px 14px; border-radius: 20px; margin-bottom: 20px; }
-  h1 { font-family: 'Playfair Display', serif; font-size: clamp(30px, 6vw, 44px); font-weight: 700; line-height: 1.15; margin-bottom: 16px; }
-  h1 em { font-style: italic; color: var(--gold); }
-  .lead { font-size: 17px; color: var(--muted); font-weight: 300; max-width: 520px; margin-bottom: 36px; }
-  .steps { display: flex; flex-direction: column; gap: 18px; margin-bottom: 40px; }
-  .step { display: flex; gap: 16px; align-items: flex-start; background: #fff; border: 1px solid var(--divider); border-radius: 12px; padding: 18px 20px; }
-  .step-num { flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%; background: var(--gold); color: #fff; font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center; }
-  .step-body strong { display: block; font-size: 15px; margin-bottom: 3px; }
-  .step-body span { font-size: 14px; color: var(--muted); }
-  .price-card { background: var(--warm); border: 1px solid var(--divider); border-radius: 14px; padding: 28px; text-align: center; margin-bottom: 32px; }
-  .price { font-family: 'Playfair Display', serif; font-size: 40px; font-weight: 700; color: var(--gold); }
-  .price-detail { font-size: 13px; color: var(--muted); margin-top: 6px; margin-bottom: 22px; }
-  .btn-cta { display: inline-block; width: 100%; background: var(--ink); color: var(--cream); font-size: 16px; font-weight: 500; padding: 16px 24px; border-radius: 10px; text-decoration: none; transition: background 0.2s; }
-  .btn-cta:hover { background: #2a2218; }
-  .note { font-size: 13px; color: var(--light); margin-top: 16px; }
-  .info-box { display: flex; gap: 12px; background: var(--green-light); border-left: 3px solid var(--green); border-radius: 8px; padding: 14px 16px; font-size: 13px; color: var(--muted); margin-bottom: 20px; }
-  footer { text-align: center; font-size: 12px; color: var(--light); margin-top: 40px; }
+  body { font-family: 'Work Sans', sans-serif; color: var(--ink); background: var(--paper); line-height: 1.55; }
+  .wrap { max-width: 640px; margin: 0 auto; padding: 40px 20px 80px; }
+  .masthead { border-top: 3px solid var(--ink); border-bottom: 1px solid var(--ink); padding: 10px 0; margin-bottom: 40px; display: flex; justify-content: space-between; align-items: center; font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; }
+  .masthead .kicker { color: var(--burgundy); font-weight: 600; }
+  .masthead .brand { color: var(--muted); }
+  h1 { font-family: 'Source Serif 4', serif; font-size: clamp(32px, 7vw, 52px); font-weight: 700; line-height: 1.05; letter-spacing: -0.01em; margin-bottom: 22px; }
+  h1 em { font-style: italic; font-weight: 400; }
+  .dek { font-family: 'Source Serif 4', serif; font-size: 19px; font-style: italic; color: var(--muted); max-width: 540px; margin-bottom: 36px; border-left: 3px solid var(--burgundy); padding-left: 18px; }
+  .zone-list { display: flex; justify-content: space-between; font-family: 'Source Serif 4', serif; font-size: 15px; padding: 16px 0; border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); margin-bottom: 44px; }
+  .steps { margin-bottom: 44px; }
+  .step { display: grid; grid-template-columns: 48px 1fr; gap: 18px; padding: 22px 0; border-bottom: 1px solid var(--rule); }
+  .step:first-child { border-top: 1px solid var(--rule); }
+  .step-num { font-family: 'Source Serif 4', serif; font-size: 30px; font-weight: 700; color: var(--burgundy); line-height: 1; }
+  .step-body strong { display: block; font-size: 16.5px; margin-bottom: 5px; font-weight: 600; }
+  .step-body span { font-size: 14.5px; color: var(--muted); }
+  .price-block { border: 2px solid var(--ink); padding: 32px; text-align: center; margin-bottom: 30px; }
+  .price { font-family: 'Source Serif 4', serif; font-size: 48px; font-weight: 700; }
+  .price-detail { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 8px; margin-bottom: 26px; }
+  .btn-cta { display: inline-block; width: 100%; background: var(--burgundy); color: #fff; font-size: 15px; font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase; padding: 17px 24px; text-decoration: none; transition: background 0.15s; }
+  .btn-cta:hover { background: #5e1720; }
+  .note { font-size: 12.5px; color: var(--muted); margin-top: 16px; }
+  .info-box { font-size: 13px; color: var(--muted); border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 16px 0; margin-bottom: 30px; }
+  footer { text-align: center; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; padding-top: 20px; border-top: 3px solid var(--ink); }
 </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="badge">Nouveau service</div>
-    <h1>Bougez mieux,<br><em>de chez vous.</em></h1>
-    <p class="lead">Un bilan de mobilité à distance pour identifier ce qui limite vos mouvements, et recevoir un programme personnalisé fait pour vous.</p>
+    <div class="masthead">
+      <span class="kicker">Bilan préventif</span>
+      <span class="brand">MoveCheck</span>
+    </div>
+
+    <h1>Votre mobilité vieillit.<br><em>Suivez-la.</em></h1>
+    <p class="dek">À partir de 40 ans, la mobilité du dos, des cervicales, des épaules et des genoux décline en silence, souvent avant que la douleur n'apparaisse. MoveCheck est un bilan à distance qui mesure où vous en êtes aujourd'hui, avec un programme pour préserver ce qui compte, et un suivi pour voir votre évolution dans le temps.</p>
+
+    <div class="zone-list">
+      <span>Dos</span><span>Cervicales</span><span>Épaules</span><span>Genoux</span>
+    </div>
 
     <div class="steps">
       <div class="step">
-        <div class="step-num">1</div>
+        <div class="step-num">01</div>
         <div class="step-body"><strong>Vous réglez le bilan</strong><span>Paiement sécurisé en ligne, 2 minutes.</span></div>
       </div>
       <div class="step">
-        <div class="step-num">2</div>
-        <div class="step-body"><strong>Vous filmez 5 tests simples</strong><span>Guidé pas à pas depuis votre téléphone, directement dans l'appli.</span></div>
+        <div class="step-num">02</div>
+        <div class="step-body"><strong>Vous filmez 5 tests simples</strong><span>Guidé pas à pas depuis votre téléphone, seul ou accompagné, en quelques minutes.</span></div>
       </div>
       <div class="step">
-        <div class="step-num">3</div>
-        <div class="step-body"><strong>Vous recevez votre programme</strong><span>Analyse personnalisée et suivi à J+30.</span></div>
+        <div class="step-num">03</div>
+        <div class="step-body"><strong>Vous recevez votre programme et votre suivi</strong><span>Analyse personnalisée, puis suivi à J+30 pour mesurer ce qui a changé.</span></div>
       </div>
     </div>
 
-    <div class="price-card">
+    <div class="price-block">
       <div class="price">59 €</div>
       <div class="price-detail">Bilan complet · Programme personnalisé · Suivi J+30</div>
       <a class="btn-cta" id="ctaBtn" href="#">Commencer mon bilan</a>
@@ -67,10 +77,10 @@
     </div>
 
     <div class="info-box">
-      🔒&nbsp; Ce bilan ne remplace pas une consultation ostéopathique. En cas de douleur vive, consultez un professionnel de santé en priorité.
+      Ce bilan ne remplace pas une consultation ostéopathique. En cas de douleur vive, consultez un professionnel de santé en priorité.
     </div>
 
-    <footer>Nicolas Roger · Ostéopathe D.O. · Narbonne</footer>
+    <footer>Nicolas Roger — Ostéopathe D.O. — Narbonne</footer>
   </div>
 
   <script src="config.js"></script>

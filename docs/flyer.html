@@ -3,33 +3,41 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MoveCheck – Flyer salle d'attente</title>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <title>MoveCheck – Flyer salle d'attente (bilan préventif)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
+    :root {
+      --ink: #111111; --muted: #565656; --paper: #f4f2ee; --rule: #d8d4cc;
+      --burgundy: #7a1f2b;
+    }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Montserrat', sans-serif; background: #f0f0f0; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-    .flyer { width: 148mm; min-height: 210mm; background: #ffffff; padding: 12mm 10mm; display: flex; flex-direction: column; align-items: center; gap: 6mm; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
-    .header { width: 100%; text-align: right; font-size: 8pt; color: #888; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 3mm; }
-    .badge { background: #1B6CA8; color: white; font-size: 7.5pt; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; padding: 3px 12px; border-radius: 20px; }
-    .title { text-align: center; line-height: 1.15; }
-    .title h1 { font-size: 26pt; font-weight: 800; color: #1B2A3B; line-height: 1.1; }
-    .title h1 span { color: #1B6CA8; }
-    .subtitle { font-size: 10pt; color: #555; text-align: center; font-weight: 400; line-height: 1.5; max-width: 120mm; }
-    .steps { width: 100%; display: flex; flex-direction: column; gap: 3mm; }
-    .step { display: flex; align-items: flex-start; gap: 3mm; }
-    .step-num { min-width: 7mm; height: 7mm; background: #1B6CA8; color: white; border-radius: 50%; font-size: 7.5pt; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-top: 1px; }
-    .step-text { font-size: 9pt; color: #333; line-height: 1.4; }
-    .step-text strong { font-weight: 700; color: #1B2A3B; }
-    .divider { width: 100%; border: none; border-top: 1px solid #eee; }
-    .price-block { text-align: center; background: #f4f8fd; border-radius: 8px; padding: 4mm 8mm; width: 100%; }
-    .price-block .price { font-size: 28pt; font-weight: 800; color: #1B6CA8; }
-    .price-block .price-detail { font-size: 8pt; color: #666; margin-top: 1mm; line-height: 1.5; }
-    .qr-section { display: flex; flex-direction: column; align-items: center; gap: 3mm; width: 100%; }
-    .qr-placeholder { width: 35mm; height: 35mm; border: 2px dashed #1B6CA8; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: #f9fbff; overflow: hidden; }
-    #qrcode canvas, #qrcode img { width: 33mm !important; height: 33mm !important; }
-    .qr-label { font-size: 9pt; color: #444; font-weight: 600; text-align: center; }
-    .footer { width: 100%; text-align: center; font-size: 7.5pt; color: #999; border-top: 1px solid #eee; padding-top: 3mm; line-height: 1.6; }
+    body { font-family: 'Work Sans', sans-serif; color: var(--ink); background: #e8e5df; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+    .flyer { width: 148mm; min-height: 210mm; background: var(--paper); padding: 12mm 10mm; display: flex; flex-direction: column; gap: 5mm; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+    .masthead { border-top: 2.5pt solid var(--ink); border-bottom: 0.75pt solid var(--ink); padding: 2mm 0; display: flex; justify-content: space-between; align-items: center; font-size: 7.5pt; letter-spacing: 0.06em; text-transform: uppercase; }
+    .masthead .kicker { color: var(--burgundy); font-weight: 600; }
+    .masthead .brand { color: var(--muted); }
+    .title { line-height: 1.05; margin-top: 4mm; }
+    .title h1 { font-family: 'Source Serif 4', serif; font-size: 24pt; font-weight: 700; color: var(--ink); }
+    .title h1 em { font-style: italic; font-weight: 400; }
+    .dek { font-family: 'Source Serif 4', serif; font-size: 10.5pt; font-style: italic; color: var(--muted); line-height: 1.45; border-left: 2pt solid var(--burgundy); padding-left: 4mm; margin: 4mm 0 2mm; }
+    .zone-list { display: flex; justify-content: space-between; font-family: 'Source Serif 4', serif; font-size: 9pt; padding: 2.5mm 0; border-top: 0.75pt solid var(--ink); border-bottom: 0.75pt solid var(--ink); }
+    .steps { width: 100%; display: flex; flex-direction: column; }
+    .step { display: grid; grid-template-columns: 8mm 1fr; gap: 3mm; padding: 3mm 0; border-bottom: 0.5pt solid var(--rule); }
+    .step:first-child { border-top: 0.5pt solid var(--rule); }
+    .step-num { font-family: 'Source Serif 4', serif; font-size: 14pt; font-weight: 700; color: var(--burgundy); line-height: 1.1; }
+    .step-text { font-size: 8.5pt; color: #333; line-height: 1.4; }
+    .step-text strong { font-weight: 600; color: var(--ink); display: block; margin-bottom: 0.5mm; }
+    .price-block { border: 1.5pt solid var(--ink); text-align: center; padding: 4mm 6mm; }
+    .price-block .price { font-family: 'Source Serif 4', serif; font-size: 24pt; font-weight: 700; color: var(--ink); }
+    .price-block .price-detail { font-size: 7.5pt; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 1mm; }
+    .qr-section { display: flex; align-items: center; gap: 5mm; width: 100%; border-top: 0.75pt solid var(--ink); border-bottom: 0.75pt solid var(--ink); padding: 4mm 0; }
+    .qr-box { flex-shrink: 0; width: 28mm; height: 28mm; border: 1.5pt solid var(--ink); display: flex; align-items: center; justify-content: center; background: #fff; overflow: hidden; }
+    #qrcode canvas, #qrcode img { width: 25mm !important; height: 25mm !important; }
+    .qr-label { font-family: 'Source Serif 4', serif; font-size: 9.5pt; font-style: italic; color: var(--ink); line-height: 1.4; }
+    .footer { width: 100%; text-align: center; font-size: 7pt; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; padding-top: 3mm; line-height: 1.6; }
     @media print {
       body { background: white; padding: 0; margin: 0; }
       .flyer { box-shadow: none; width: 148mm; min-height: 210mm; }
@@ -39,25 +47,35 @@
 </head>
 <body>
   <div class="flyer">
-    <div class="header">Nicolas Roger · Ostéopathe D.O.</div>
-    <div class="badge">Nouveau service</div>
-    <div class="title"><h1>Bougez mieux,<br><span>de chez vous.</span></h1></div>
-    <p class="subtitle">Un bilan de mobilité à distance pour identifier ce qui limite vos mouvements et recevoir un programme fait pour vous.</p>
-    <hr class="divider">
-    <div class="steps">
-      <div class="step"><div class="step-num">1</div><div class="step-text"><strong>Vous réglez</strong> le bilan en ligne, paiement sécurisé.</div></div>
-      <div class="step"><div class="step-num">2</div><div class="step-text"><strong>Vous filmez</strong> 5 tests de mobilité simples à domicile, guidé par l'appli.</div></div>
-      <div class="step"><div class="step-num">3</div><div class="step-text"><strong>Vous recevez</strong> un programme de mobilité personnalisé, suivi inclus à J+30.</div></div>
+    <div class="masthead">
+      <span class="kicker">Bilan préventif</span>
+      <span class="brand">Nicolas Roger · Ostéopathe D.O.</span>
     </div>
-    <hr class="divider">
+
+    <div class="title"><h1>Votre mobilité vieillit.<br><em>Suivez-la.</em></h1></div>
+
+    <p class="dek">Dos, cervicales, épaules, genoux : à partir de 40 ans, la mobilité décline en silence, souvent avant que la douleur n'apparaisse. Un bilan à distance pour savoir où vous en êtes et suivre votre évolution.</p>
+
+    <div class="zone-list">
+      <span>Dos</span><span>Cervicales</span><span>Épaules</span><span>Genoux</span>
+    </div>
+
+    <div class="steps">
+      <div class="step"><div class="step-num">01</div><div class="step-text"><strong>Vous réglez</strong>le bilan en ligne, paiement sécurisé.</div></div>
+      <div class="step"><div class="step-num">02</div><div class="step-text"><strong>Vous filmez</strong>5 tests simples, seul ou accompagné, en quelques minutes.</div></div>
+      <div class="step"><div class="step-num">03</div><div class="step-text"><strong>Vous recevez</strong>votre programme et votre suivi à J+30, pour mesurer ce qui a changé.</div></div>
+    </div>
+
     <div class="price-block">
       <div class="price">59 €</div>
       <div class="price-detail">Bilan complet · Programme personnalisé · Suivi J+30</div>
     </div>
+
     <div class="qr-section">
-      <div class="qr-placeholder"><div id="qrcode"></div></div>
-      <div class="qr-label">Scannez pour découvrir MoveCheck</div>
+      <div class="qr-box"><div id="qrcode"></div></div>
+      <div class="qr-label">Curieux de savoir comment ça se déroule ?<br>Scannez pour voir le pas à pas.</div>
     </div>
+
     <div class="footer">Nicolas Roger · Ostéopathe D.O. · Narbonne<br>Ce bilan ne remplace pas une consultation ostéopathique.</div>
   </div>
   <script>
@@ -66,9 +84,9 @@
     const SITE_URL = window.location.origin + window.location.pathname.replace(/flyer\.html$/, 'index.html');
     new QRCode(document.getElementById("qrcode"), {
       text: SITE_URL,
-      width: 132,
-      height: 132,
-      colorDark: "#1B2A3B",
+      width: 100,
+      height: 100,
+      colorDark: "#111111",
       colorLight: "#ffffff",
       correctLevel: QRCode.CorrectLevel.M
     });
