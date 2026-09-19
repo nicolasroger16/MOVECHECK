@@ -72,7 +72,7 @@
       <div class="price-detail">Bilan complet · Programme personnalisé · Suivi J+30</div>
     </div>
 
-    <p class="sub-note">Un suivi trimestriel (45 € / 3 mois) est aussi proposé — détails sur le site.</p>
+    <p class="sub-note" id="subNote" hidden>Un suivi trimestriel (45 € / 3 mois) est aussi proposé — détails sur le site.</p>
 
     <div class="qr-section">
       <div class="qr-box"><div id="qrcode"></div></div>
@@ -81,7 +81,14 @@
 
     <div class="footer">Nicolas Roger · Ostéopathe D.O. · Narbonne<br>Ce bilan ne remplace pas une consultation ostéopathique.</div>
   </div>
+  <script src="config.js"></script>
   <script>
+    // Comme sur le site, la mention de l'abonnement n'apparaît que lorsque
+    // le lien de paiement est configuré (sinon elle renverrait vers rien).
+    if (window.MOVECHECK_CONFIG && window.MOVECHECK_CONFIG.STRIPE_SUBSCRIPTION_LINK) {
+      document.getElementById('subNote').hidden = false;
+    }
+
     // Le QR pointe vers la page de présentation MoveCheck (index.html),
     // et non plus vers un Google Form.
     const SITE_URL = window.location.origin + window.location.pathname.replace(/flyer\.html$/, 'index.html');

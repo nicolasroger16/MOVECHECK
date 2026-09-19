@@ -64,10 +64,10 @@ async function sendCodeEmails(params: {
   zone: string;
   intro: string;
   practitionerSubject: string;
-}) {
+}): Promise<boolean> {
   const { code, prenom, nom, email, zone, intro, practitionerSubject } = params;
   const filmageUrl = `${SITE_URL}/filmage.html?code=${code}`;
-  await sendEmail(
+  const patientSent = await sendEmail(
     email,
     "Votre code d'accès MoveCheck",
     `<p>Bonjour ${prenom},</p>
@@ -83,6 +83,20 @@ async function sendCodeEmails(params: {
      <p>Zone : ${zone || "non renseignée"}</p>
      <p>Code : ${code}</p>`,
   );
+  return patientSent;
+}
+
+// Stripe a déplacé l'identifiant d'abonnement de la facture : `invoice.subscription`
+// jusqu'à l'API 2025-03, `invoice.parent.subscription_details.subscription` ensuite.
+// La forme du payload dépend de la version d'API de l'endpoint webhook configuré
+// dans le Dashboard (pas de celle du SDK ci-dessus) : on lit donc les deux.
+function invoiceSubscriptionId(invoice: Stripe.Invoice): string | null {
+  const modern = (invoice as unknown as {
+    parent?: { subscription_details?: { subscription?: string | { id: string } | null } };
+  }).parent?.subscription_details?.subscription;
+  const sub = invoice.subscription ?? modern;
+  if (!sub) return null;
+  return typeof sub === "string" ? sub : sub.id;
 }
 
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
@@ -152,7 +166,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   }
 
   if (!existing?.email_sent) {
-    await sendCodeEmails({
+    const sent = await sendCodeEmails({
       code: code!,
       prenom,
       nom,
@@ -163,7 +177,9 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
         : "Merci pour votre paiement.",
       practitionerSubject: isSubscription ? "Nouvel abonnement MoveCheck" : "Nouvelle demande de bilan MoveCheck",
     });
-    await supabase.from("bilans").update({ email_sent: true }).eq("stripe_session_id", session.id);
+    if (sent) {
+      await supabase.from("bilans").update({ email_sent: true }).eq("stripe_session_id", session.id);
+    }
   }
 
   return jsonResponse({ received: true, code });
@@ -177,8 +193,11 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
     return jsonResponse({ received: true });
   }
 
-  const subscriptionId = invoice.subscription as string;
-  if (!subscriptionId) return jsonResponse({ received: true });
+  const subscriptionId = invoiceSubscriptionId(invoice);
+  if (!subscriptionId) {
+    console.error("Facture d'abonnement sans identifiant d'abonnement:", invoice.id);
+    return jsonResponse({ received: true });
+  }
 
   const { data: abonnement } = await supabase
     .from("abonnements")
@@ -191,54 +210,68 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
     return jsonResponse({ received: true });
   }
 
-  // Idempotent : une facture ne doit générer qu'un seul rebilan.
-  const { data: existingBilan } = await supabase
+  // Idempotent : une facture ne doit générer qu'un seul rebilan. Si le rebilan
+  // existe déjà mais que son email n'est pas parti (échec Resend, crash entre
+  // l'insertion et l'envoi), le retry de Stripe reprend à l'envoi.
+  let { data: bilan } = await supabase
     .from("bilans")
-    .select("id")
+    .select("code, zone, cycle_number, email_sent")
     .eq("stripe_invoice_id", invoice.id)
     .maybeSingle();
-  if (existingBilan) return jsonResponse({ received: true });
 
-  const { data: previousCycles } = await supabase
-    .from("bilans")
-    .select("cycle_number, zone")
-    .eq("abonnement_id", abonnement.id)
-    .order("cycle_number", { ascending: false })
-    .limit(1);
+  if (!bilan) {
+    const { data: previousCycles } = await supabase
+      .from("bilans")
+      .select("cycle_number, zone, telephone")
+      .eq("abonnement_id", abonnement.id)
+      .order("cycle_number", { ascending: false })
+      .limit(1);
 
-  const cycleNumber = (previousCycles?.[0]?.cycle_number ?? 0) + 1;
-  const zone = previousCycles?.[0]?.zone ?? "";
-  const code = genCode();
-
-  const { error } = await supabase.from("bilans").insert({
-    code,
-    stripe_invoice_id: invoice.id,
-    prenom: abonnement.prenom,
-    nom: abonnement.nom,
-    email: abonnement.email,
-    zone,
-    status: "paye",
-    kind: "abonnement",
-    abonnement_id: abonnement.id,
-    cycle_number: cycleNumber,
-    email_sent: true,
-  });
-  if (error) {
-    console.error("Erreur insertion rebilan:", error);
-    return jsonResponse({ error: "db insert failed" }, 500);
+    const previous = previousCycles?.[0];
+    const { data: inserted, error } = await supabase
+      .from("bilans")
+      .insert({
+        code: genCode(),
+        stripe_invoice_id: invoice.id,
+        prenom: abonnement.prenom,
+        nom: abonnement.nom,
+        email: abonnement.email,
+        telephone: previous?.telephone ?? null,
+        zone: previous?.zone ?? "",
+        status: "paye",
+        kind: "abonnement",
+        abonnement_id: abonnement.id,
+        cycle_number: (previous?.cycle_number ?? 0) + 1,
+      })
+      .select("code, zone, cycle_number, email_sent")
+      .single();
+    if (error || !inserted) {
+      console.error("Erreur insertion rebilan:", error);
+      return jsonResponse({ error: "db insert failed" }, 500);
+    }
+    bilan = inserted;
   }
 
-  await sendCodeEmails({
-    code,
-    prenom: abonnement.prenom,
-    nom: abonnement.nom,
-    email: abonnement.email,
-    zone,
-    intro: `C'est l'heure de votre rebilan trimestriel (cycle ${cycleNumber}).`,
-    practitionerSubject: `Rebilan MoveCheck (cycle ${cycleNumber})`,
-  });
+  if (!bilan.email_sent) {
+    const sent = await sendCodeEmails({
+      code: bilan.code,
+      prenom: abonnement.prenom,
+      nom: abonnement.nom,
+      email: abonnement.email,
+      zone: bilan.zone ?? "",
+      intro: `C'est l'heure de votre rebilan trimestriel (cycle ${bilan.cycle_number}).`,
+      practitionerSubject: `Rebilan MoveCheck (cycle ${bilan.cycle_number})`,
+    });
+    if (!sent) {
+      // Pas de page "merci" pour un renouvellement : l'email est le seul canal
+      // du patient. On répond en erreur pour que Stripe réessaie plus tard.
+      console.error("Email de rebilan non envoyé, retry Stripe attendu:", invoice.id);
+      return jsonResponse({ error: "email failed" }, 500);
+    }
+    await supabase.from("bilans").update({ email_sent: true }).eq("stripe_invoice_id", invoice.id);
+  }
 
-  return jsonResponse({ received: true, code });
+  return jsonResponse({ received: true, code: bilan.code });
 }
 
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
