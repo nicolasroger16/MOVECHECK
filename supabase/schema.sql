@@ -1,5 +1,7 @@
 -- MoveCheck — schéma Supabase
--- À exécuter une fois dans le SQL Editor de votre projet Supabase.
+-- À exécuter dans le SQL Editor de votre projet Supabase. Ce script peut être
+-- réexécuté sans risque (tout est idempotent) : à chaque évolution du projet,
+-- relancez-le en entier, vos données existantes ne sont pas touchées.
 
 create extension if not exists "pgcrypto";
 
@@ -25,24 +27,35 @@ alter table public.bilans enable row level security;
 -- Le dashboard praticien (Supabase Auth) peut tout lire et mettre à jour.
 -- Les patients n'accèdent jamais directement à cette table : ils passent
 -- toujours par les Edge Functions (clé service_role, qui contourne RLS).
+drop policy if exists "authenticated read all bilans" on public.bilans;
 create policy "authenticated read all bilans"
   on public.bilans for select
   to authenticated
   using (true);
 
+drop policy if exists "authenticated update all bilans" on public.bilans;
 create policy "authenticated update all bilans"
   on public.bilans for update
   to authenticated
   using (true);
 
 -- Mur en direct : le dashboard écoute les changements sur cette table.
-alter publication supabase_realtime add table public.bilans;
+do $$
+begin
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'bilans'
+  ) then
+    alter publication supabase_realtime add table public.bilans;
+  end if;
+end $$;
 
 -- Stockage des vidéos de filmage, bucket privé.
 insert into storage.buckets (id, name, public)
 values ('videos', 'videos', false)
 on conflict (id) do nothing;
 
+drop policy if exists "authenticated read videos" on storage.objects;
 create policy "authenticated read videos"
   on storage.objects for select
   to authenticated
@@ -65,11 +78,13 @@ create table if not exists public.abonnements (
 
 alter table public.abonnements enable row level security;
 
+drop policy if exists "authenticated read all abonnements" on public.abonnements;
 create policy "authenticated read all abonnements"
   on public.abonnements for select
   to authenticated
   using (true);
 
+drop policy if exists "authenticated update all abonnements" on public.abonnements;
 create policy "authenticated update all abonnements"
   on public.abonnements for update
   to authenticated

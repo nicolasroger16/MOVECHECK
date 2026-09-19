@@ -161,8 +161,8 @@ Le code est prêt (webhook, base de données, page web), mais trois étapes
 manuelles restent à faire :
 
 1. **Mettre à jour la base** : dans Supabase → SQL Editor, réexécutez le
-   contenu de `supabase/schema.sql` (les nouvelles lignes sont protégées par
-   `if not exists`, ça ne touche pas vos données existantes).
+   contenu de `supabase/schema.sql` en entier (le script est idempotent :
+   il peut être relancé sans erreur et ne touche pas vos données existantes).
 
 2. **Créer le prix récurrent et son Payment Link** :
    - Stripe Dashboard → **Produits** → nouveau produit "Suivi mobilité
@@ -173,13 +173,18 @@ manuelles restent à faire :
      `merci.html?session_id={CHECKOUT_SESSION_ID}`.
    - Copiez ce lien dans `docs/config.js`, champ `STRIPE_SUBSCRIPTION_LINK`
      (le bloc "Suivi trimestriel" reste caché sur le site tant que ce champ
-     est vide).
+     est vide). La mention de l'abonnement sur `flyer.html` est cachée de la
+     même façon : elle n'apparaît qu'une fois ce lien renseigné.
 
 3. **Étendre le webhook Stripe** : sur l'endpoint webhook existant (Stripe
    Dashboard → Développeurs → Webhooks → votre endpoint), ajoutez l'écoute
    de deux événements en plus de `checkout.session.completed` :
    - `invoice.paid` (déclenche chaque rebilan trimestriel automatique)
    - `customer.subscription.deleted` (marque l'abonnement comme annulé)
+
+   Puis **redéployez la fonction** pour qu'elle prenne en compte ces
+   événements (elle a changé avec l'abonnement) :
+   `supabase functions deploy stripe-webhook --no-verify-jwt`
 
 Une fois ces 3 étapes faites : un patient qui s'abonne reçoit son 1er bilan
 immédiatement (comme un bilan ponctuel), puis tous les 3 mois Stripe
