@@ -37,6 +37,7 @@
     .qr-box { flex-shrink: 0; width: 28mm; height: 28mm; border: 1.5pt solid var(--ink); display: flex; align-items: center; justify-content: center; background: #fff; overflow: hidden; }
     #qrcode canvas, #qrcode img { width: 25mm !important; height: 25mm !important; }
     .qr-label { font-family: 'Source Serif 4', serif; font-size: 9.5pt; font-style: italic; color: var(--ink); line-height: 1.4; }
+    .sub-note { font-family: 'Source Serif 4', serif; font-size: 8pt; font-style: italic; color: var(--muted); text-align: center; }
     .footer { width: 100%; text-align: center; font-size: 7pt; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; padding-top: 3mm; line-height: 1.6; }
     @media print {
       body { background: white; padding: 0; margin: 0; }
@@ -70,6 +71,8 @@
       <div class="price">59 €</div>
       <div class="price-detail">Bilan complet · Programme personnalisé · Suivi J+30</div>
     </div>
+
+    <p class="sub-note">Un suivi trimestriel (45 € / 3 mois) est aussi proposé — détails sur le site.</p>
 
     <div class="qr-section">
       <div class="qr-box"><div id="qrcode"></div></div>

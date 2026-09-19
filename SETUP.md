@@ -155,6 +155,37 @@ Fichier → Imprimer → Enregistrer en PDF (format A5 déjà configuré).
 3. Repassez en mode live une fois satisfait, et re-créez le webhook en mode
    live (les clés/secrets de test et live sont différents dans Stripe).
 
+## 9. Activer l'abonnement "suivi trimestriel" (45€ / 3 mois)
+
+Le code est prêt (webhook, base de données, page web), mais trois étapes
+manuelles restent à faire :
+
+1. **Mettre à jour la base** : dans Supabase → SQL Editor, réexécutez le
+   contenu de `supabase/schema.sql` (les nouvelles lignes sont protégées par
+   `if not exists`, ça ne touche pas vos données existantes).
+
+2. **Créer le prix récurrent et son Payment Link** :
+   - Stripe Dashboard → **Produits** → nouveau produit "Suivi mobilité
+     trimestriel", prix **45 €**, récurrence **tous les 3 mois**.
+   - Créez un **Payment Link** pour ce prix, avec les mêmes réglages que
+     votre lien actuel (étape 4 ci-dessus) : collecte du téléphone, les 3
+     champs personnalisés `prenom`/`nom`/`zone`, et la même redirection vers
+     `merci.html?session_id={CHECKOUT_SESSION_ID}`.
+   - Copiez ce lien dans `docs/config.js`, champ `STRIPE_SUBSCRIPTION_LINK`
+     (le bloc "Suivi trimestriel" reste caché sur le site tant que ce champ
+     est vide).
+
+3. **Étendre le webhook Stripe** : sur l'endpoint webhook existant (Stripe
+   Dashboard → Développeurs → Webhooks → votre endpoint), ajoutez l'écoute
+   de deux événements en plus de `checkout.session.completed` :
+   - `invoice.paid` (déclenche chaque rebilan trimestriel automatique)
+   - `customer.subscription.deleted` (marque l'abonnement comme annulé)
+
+Une fois ces 3 étapes faites : un patient qui s'abonne reçoit son 1er bilan
+immédiatement (comme un bilan ponctuel), puis tous les 3 mois Stripe
+facture automatiquement et le webhook génère un nouveau code + email, sans
+aucune action de votre part.
+
 ## Notes
 
 - Le stockage vidéo Supabase gratuit inclut 1 Go ; au-delà, l'espace est

@@ -37,6 +37,14 @@
   .btn-cta:hover { background: #5e1720; }
   .note { font-size: 12.5px; color: var(--muted); margin-top: 16px; }
   .info-box { font-size: 13px; color: var(--muted); border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 16px 0; margin-bottom: 30px; }
+  .sub-block { border: 1px solid var(--ink); padding: 28px; margin-bottom: 30px; }
+  .sub-label { font-size: 11px; color: var(--burgundy); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; margin-bottom: 10px; }
+  .sub-title { font-family: 'Source Serif 4', serif; font-size: 24px; font-weight: 700; margin-bottom: 10px; }
+  .sub-text { font-size: 14px; color: var(--muted); margin-bottom: 20px; max-width: 480px; }
+  .sub-price { font-family: 'Source Serif 4', serif; font-size: 28px; font-weight: 700; margin-bottom: 18px; }
+  .sub-price span { font-family: 'Work Sans', sans-serif; font-size: 13px; font-weight: 500; color: var(--muted); }
+  .btn-cta-outline { display: inline-block; width: 100%; background: transparent; border: 1.5px solid var(--burgundy); color: var(--burgundy); font-size: 14.5px; font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase; padding: 15px 24px; text-decoration: none; text-align: center; transition: background 0.15s, color 0.15s; }
+  .btn-cta-outline:hover { background: var(--burgundy); color: #fff; }
   footer { text-align: center; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; padding-top: 20px; border-top: 3px solid var(--ink); }
 </style>
 </head>
@@ -76,6 +84,14 @@
       <div class="note">Vous recevrez votre code d'accès aux consignes de filmage juste après le paiement.</div>
     </div>
 
+    <div class="sub-block" id="subBlock">
+      <div class="sub-label">Pour aller plus loin</div>
+      <div class="sub-title">Suivi trimestriel</div>
+      <p class="sub-text">Un nouveau bilan tous les 3 mois pour suivre votre évolution dans la durée : nouveau filmage, programme actualisé, moins cher qu'un bilan repris à zéro à chaque fois.</p>
+      <div class="sub-price">45 € <span>/ trimestre</span></div>
+      <a class="btn-cta-outline" id="subBtn" href="#">S'abonner au suivi trimestriel</a>
+    </div>
+
     <div class="info-box">
       Ce bilan ne remplace pas une consultation ostéopathique. En cas de douleur vive, consultez un professionnel de santé en priorité.
     </div>
@@ -86,6 +102,13 @@
   <script src="config.js"></script>
   <script>
     document.getElementById('ctaBtn').href = window.MOVECHECK_CONFIG.STRIPE_PAYMENT_LINK;
+
+    const subLink = window.MOVECHECK_CONFIG.STRIPE_SUBSCRIPTION_LINK;
+    if (subLink) {
+      document.getElementById('subBtn').href = subLink;
+    } else {
+      document.getElementById('subBlock').hidden = true;
+    }
   </script>
 </body>
 </html>
