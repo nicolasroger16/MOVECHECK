@@ -8,5 +8,5 @@ window.MOVECHECK_CONFIG = {
   STRIPE_PAYMENT_LINK: "https://buy.stripe.com/bJe28sblH2sIdU4523c3m00",
   // Lien de paiement Stripe pour l'abonnement "suivi trimestriel" (45€/3 mois).
   // À créer dans Stripe Dashboard → Payment Links (voir SETUP.md), puis coller ici.
-  STRIPE_SUBSCRIPTION_LINK: "",
+  STRIPE_SUBSCRIPTION_LINK: "https://buy.stripe.com/bJe9AUfBX9VaeY82TVc3m03",
 };

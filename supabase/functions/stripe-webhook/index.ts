@@ -35,8 +35,19 @@ function genCode() {
   return "MC-" + crypto.randomUUID().replace(/-/g, "").slice(0, 6).toUpperCase();
 }
 
+// "Prénom" -> "prenom", "Zone douloureuse principale" -> "zonedouloureuseprincipale"
+function normalize(s: string | null | undefined) {
+  return (s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+// Le Dashboard Stripe génère la clé à partir du libellé : on accepte la clé
+// exacte, puis la clé ou le libellé normalisés qui commencent par la clé attendue.
 function customField(session: Stripe.Checkout.Session, key: string) {
-  const field = session.custom_fields?.find((f) => f.key === key);
+  const fields = session.custom_fields ?? [];
+  const field =
+    fields.find((f) => f.key === key) ||
+    fields.find((f) => normalize(f.key) === key || normalize(f.label?.custom) === key) ||
+    fields.find((f) => normalize(f.key).startsWith(key) || normalize(f.label?.custom).startsWith(key));
   return field?.text?.value?.trim() || "";
 }
 
