@@ -62,9 +62,22 @@ async function sendEmail(to: string, subject: string, html: string) {
       Authorization: `Bearer ${RESEND_API_KEY}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ from: FROM_EMAIL, to, subject, html }),
+    // Le domaine d'envoi n'a pas de boîte de réception : les réponses vont au praticien.
+    body: JSON.stringify({ from: FROM_EMAIL, to, subject, html, reply_to: PRACTITIONER_EMAIL }),
   });
+  if (!res.ok) {
+    console.error(`Échec envoi email "${subject}" (HTTP ${res.status}):`, await res.text());
+  }
   return res.ok;
+}
+
+// La forme des événements suit la version d'API du webhook Stripe, pas celle du
+// SDK ci-dessus : depuis la version "basil", l'abonnement d'une facture est
+// dans parent.subscription_details. On accepte les deux emplacements.
+function invoiceSubscriptionId(invoice: Stripe.Invoice): string | null {
+  // deno-lint-ignore no-explicit-any
+  const raw = invoice as any;
+  return raw.subscription ?? raw.parent?.subscription_details?.subscription ?? null;
 }
 
 async function sendCodeEmails(params: {
@@ -78,7 +91,7 @@ async function sendCodeEmails(params: {
 }) {
   const { code, prenom, nom, email, zone, intro, practitionerSubject } = params;
   const filmageUrl = `${SITE_URL}/filmage.html?code=${code}`;
-  await sendEmail(
+  const patientEmailSent = await sendEmail(
     email,
     "Votre code d'accès MoveCheck",
     `<p>Bonjour ${prenom},</p>
@@ -89,11 +102,13 @@ async function sendCodeEmails(params: {
   );
   await sendEmail(
     PRACTITIONER_EMAIL,
-    `${practitionerSubject} — ${prenom} ${nom}`,
-    `<p>${practitionerSubject} pour ${prenom} ${nom} (${email}).</p>
+    `${patientEmailSent ? "" : "⚠️ Email patient non envoyé — "}${practitionerSubject} — ${prenom} ${nom}`,
+    `${patientEmailSent ? "" : "<p><strong>⚠️ L'email au patient n'a pas pu être envoyé : transmettez-lui son code vous-même.</strong></p>"}
+     <p>${practitionerSubject} pour ${prenom} ${nom} (${email}).</p>
      <p>Zone : ${zone || "non renseignée"}</p>
      <p>Code : ${code}</p>`,
   );
+  return patientEmailSent;
 }
 
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
@@ -163,7 +178,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   }
 
   if (!existing?.email_sent) {
-    await sendCodeEmails({
+    const emailSent = await sendCodeEmails({
       code: code!,
       prenom,
       nom,
@@ -174,7 +189,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
         : "Merci pour votre paiement.",
       practitionerSubject: isSubscription ? "Nouvel abonnement MoveCheck" : "Nouvelle demande de bilan MoveCheck",
     });
-    await supabase.from("bilans").update({ email_sent: true }).eq("stripe_session_id", session.id);
+    await supabase.from("bilans").update({ email_sent: emailSent }).eq("stripe_session_id", session.id);
   }
 
   return jsonResponse({ received: true, code });
@@ -188,8 +203,11 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
     return jsonResponse({ received: true });
   }
 
-  const subscriptionId = invoice.subscription as string;
-  if (!subscriptionId) return jsonResponse({ received: true });
+  const subscriptionId = invoiceSubscriptionId(invoice);
+  if (!subscriptionId) {
+    console.error("Abonnement absent de la facture de renouvellement:", invoice.id);
+    return jsonResponse({ received: true });
+  }
 
   const { data: abonnement } = await supabase
     .from("abonnements")
@@ -232,14 +250,13 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
     kind: "abonnement",
     abonnement_id: abonnement.id,
     cycle_number: cycleNumber,
-    email_sent: true,
   });
   if (error) {
     console.error("Erreur insertion rebilan:", error);
     return jsonResponse({ error: "db insert failed" }, 500);
   }
 
-  await sendCodeEmails({
+  const emailSent = await sendCodeEmails({
     code,
     prenom: abonnement.prenom,
     nom: abonnement.nom,
@@ -248,6 +265,7 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
     intro: `C'est l'heure de votre rebilan trimestriel (cycle ${cycleNumber}).`,
     practitionerSubject: `Rebilan MoveCheck (cycle ${cycleNumber})`,
   });
+  await supabase.from("bilans").update({ email_sent: emailSent }).eq("stripe_invoice_id", invoice.id);
 
   return jsonResponse({ received: true, code });
 }
