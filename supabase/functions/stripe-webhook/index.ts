@@ -62,7 +62,8 @@ async function sendEmail(to: string, subject: string, html: string) {
       Authorization: `Bearer ${RESEND_API_KEY}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ from: FROM_EMAIL, to, subject, html }),
+    // Le domaine d'envoi n'a pas de boîte de réception : les réponses vont au praticien.
+    body: JSON.stringify({ from: FROM_EMAIL, to, subject, html, reply_to: PRACTITIONER_EMAIL }),
   });
   if (!res.ok) {
     console.error(`Échec envoi email "${subject}" (HTTP ${res.status}):`, await res.text());
