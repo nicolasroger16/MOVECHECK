@@ -1,0 +1,27 @@
+name: Garder Supabase actif
+
+# Un projet Supabase gratuit se met en pause après quelques jours sans activité.
+# Pendant une pause, Stripe encaisse mais le dossier patient n'est pas créé.
+# Cette lecture légère de la base, tous les 3 jours, évite la pause.
+# Attention : GitHub suspend les tâches planifiées d'un dépôt public sans
+# activité depuis 60 jours (il prévient par email ; réactivable dans Actions).
+
+on:
+  schedule:
+    - cron: "17 6 */3 * *"
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Lire la base
+        env:
+          # Clé publique, déjà visible dans docs/config.js
+          SUPABASE_URL: https://hjzlqwidgkdfcbghxnhp.supabase.co
+          SUPABASE_PUBLISHABLE_KEY: sb_publishable_ljLod-0jzSLOG0XndtUlbg_WDPg_G98
+        run: |
+          curl --fail --silent --show-error --output /dev/null \
+            --retry 3 --retry-delay 30 \
+            -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+            "$SUPABASE_URL/rest/v1/bilans?select=id&limit=1"
