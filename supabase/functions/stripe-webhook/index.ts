@@ -31,6 +31,16 @@ const FROM_EMAIL = Deno.env.get("FROM_EMAIL") || "MoveCheck <onboarding@resend.d
 const SITE_URL = Deno.env.get("SITE_URL") || "https://nicolasroger16.github.io/MOVECHECK";
 const PRACTITIONER_EMAIL = Deno.env.get("PRACTITIONER_EMAIL") || "nicolasroger16@gmail.com";
 
+// Le compte Stripe sert aussi à d'autres offres (ex. la veille « Preuves & Terrain »).
+// Seuls les paiements passés par ces liens MoveCheck créent un dossier patient.
+// Si vous créez un nouveau lien de paiement MoveCheck, ajoutez son identifiant ici.
+const MOVECHECK_PAYMENT_LINKS = new Set([
+  "plink_1TfibGLVyX0frNWdphml9DDz", // bilan 59 € (lien du site)
+  "plink_1U6rHYLVyX0frNWdrQyuoJMe", // bilan 59 € (ancien lien)
+  "plink_1UMuesLVyX0frNWdjVxV7lca", // suivi trimestriel 45 € (lien du site)
+  "plink_1UMubdLVyX0frNWdd4YDrQIR", // suivi trimestriel 45 € (ancien lien)
+]);
+
 function genCode() {
   return "MC-" + crypto.randomUUID().replace(/-/g, "").slice(0, 6).toUpperCase();
 }
@@ -112,6 +122,12 @@ async function sendCodeEmails(params: {
 }
 
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
+  const paymentLink = typeof session.payment_link === "string" ? session.payment_link : session.payment_link?.id;
+  if (!paymentLink || !MOVECHECK_PAYMENT_LINKS.has(paymentLink)) {
+    console.log("Paiement hors MoveCheck ignoré:", session.id, paymentLink);
+    return jsonResponse({ received: true, ignored: true });
+  }
+
   const email = session.customer_details?.email || "";
   const prenom = customField(session, "prenom") || (session.customer_details?.name?.split(" ")[0] ?? "");
   const nom = customField(session, "nom") || (session.customer_details?.name?.split(" ").slice(1).join(" ") ?? "");
