@@ -28,10 +28,10 @@ jobs:
             FROM_EMAIL="${{ secrets.FROM_EMAIL || 'MoveCheck <onboarding@resend.dev>' }}" \
             SITE_URL="${{ secrets.SITE_URL || 'https://nicolasroger16.github.io/MOVECHECK' }}" \
             PRACTITIONER_EMAIL="${{ secrets.PRACTITIONER_EMAIL || 'nicolasroger16@gmail.com' }}" \
-            --project-ref "${{ secrets.SUPABASE_PROJECT_REF }}"
+            --project-ref "${{ secrets.SUPABASE_PROJECT_REF }}"--yes
 
       - name: Déployer les fonctions
         run: |
           for fn in stripe-webhook get-code get-bilan get-upload-url submit-filmage; do
-            supabase functions deploy "$fn" --no-verify-jwt --project-ref "${{ secrets.SUPABASE_PROJECT_REF }}"
+            supabase functions deploy "$fn" --no-verify-jwt --project-ref "${{ secrets.SUPABASE_PROJECT_REF }}"--yes
           done
